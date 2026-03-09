@@ -1,0 +1,61 @@
+# Environment and secrets
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.eggs/
+*.egg-info/
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+**/.venv/
+**/venv/
+**/env/
+**/ENV/
+
+# Django/FastAPI runtime artifacts
+*.log
+celerybeat-schedule*
+*.sqlite3
+*.db
+Shopify_backend/staticfiles/
+Shopify_backend/media/
+
+# Node / frontend
+node_modules/
+**/node_modules/
+Shopify/dist/
+*.tsbuildinfo
+
+# Build artifacts
+build/
+dist/
+coverage/
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

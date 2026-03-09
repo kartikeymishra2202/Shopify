@@ -1,0 +1,63 @@
+services:
+  # 1. Redis Broker: Used only by Django Celery worker
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # 2. Django Service (Shopify Backend)
+  shopify:
+    build: ./Shopify_backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./Shopify_backend:/app
+    env_file: .env
+    # We keep ports open for debugging, but Nginx will handle traffic on port 80
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+
+  # 3. FastAPI Service (Chat Logic)
+  fastapi:
+    build: ./ChatService_FastApi
+    command: uvicorn main:app --host 0.0.0.0 --port 8001
+    volumes:
+      - ./ChatService_FastApi:/app
+    env_file: .env
+    ports:
+      - "8001:8001"
+
+  # 4. Django Celery Worker (password reset emails)
+  worker:
+    build: ./Shopify_backend
+    command: celery -A config worker --loglevel=info
+    volumes:
+      - ./Shopify_backend:/app
+    env_file: .env
+    depends_on:
+      - redis
+      - shopify
+
+  # 5. Nginx Gateway: The single entry point for the frontend
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - shopify
+      - fastapi
+
+  frontend:
+    build: ./Shopify
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./Shopify:/app
+      - /app/node_modules
+    environment:
+    - VITE_HOST=0.0.0.0
+    - VITE_MIXPANEL_TOKEN=${VITE_MIXPANEL_TOKEN_DEV}
+    - NODE_ENV=development

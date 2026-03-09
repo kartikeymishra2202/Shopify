@@ -1,0 +1,36 @@
+.git
+.gitignore
+.dockerignore
+
+# Secrets and env files
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+
+# Python artifacts
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.venv/
+**/venv/
+
+# Node artifacts
+**/node_modules/
+**/dist/
+**/.vite/
+
+# Runtime/generated files
+**/*.log
+**/*.sqlite3
+**/*.db
+**/coverage/
+
+# Editor/OS noise
+**/.idea/
+**/.vscode/
+**/.DS_Store
+**/Thumbs.db

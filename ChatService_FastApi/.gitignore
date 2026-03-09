@@ -1,0 +1,33 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+dist/
+build/
+.python-version
+
+# --- Environment Secrets (CRITICAL) ---
+.env
+.env.local
+.env.*
+!.env.example
+
+# --- Databases ---
+*.sqlite3
+*.db
+
+# --- Celery & Redis ---
+celerybeat-schedule
+*.log
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
+
+# --- IDEs ---
+.vscode/
+.idea/
+*.swp

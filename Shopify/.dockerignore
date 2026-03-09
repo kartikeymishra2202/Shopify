@@ -1,0 +1,21 @@
+.git
+.gitignore
+.dockerignore
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Node artifacts
+node_modules/
+dist/
+.vite/
+coverage/
+*.log
+
+# Editor/OS noise
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
