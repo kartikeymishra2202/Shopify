@@ -1,0 +1,58 @@
+services:
+  shopify_backend:
+    build: ./Shopify_backend
+    restart: always
+    env_file: .env
+    networks:
+      - editly_net
+
+  worker:
+    build: ./Shopify_backend
+    command: celery -A config worker --loglevel=info
+    restart: always
+    env_file: .env
+    depends_on:
+      - shopify_backend
+    networks:
+      - editly_net
+
+  chatservice_fastapi:
+    build: ./ChatService_FastApi
+    restart: always
+    env_file: .env
+    networks:
+      - editly_net
+
+  frontend:
+    build:
+      context: ./Shopify
+      args:
+        VITE_AUTH0_DOMAIN: ${VITE_AUTH0_DOMAIN}
+        VITE_AUTH0_CLIENT_ID: ${VITE_AUTH0_CLIENT_ID}
+        VITE_AUTH0_REDIRECT_URI: ${VITE_AUTH0_REDIRECT_URI}
+        VITE_MIXPANEL_TOKEN_DEV: ${VITE_MIXPANEL_TOKEN_DEV}
+        VITE_MIXPANEL_TOKEN_PROD: ${VITE_MIXPANEL_TOKEN_PROD}
+    restart: always
+    networks:
+      - editly_net
+
+  nginx:
+    image: nginx:stable-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      # Enable on EC2 once certs exist on the host:
+      # - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - shopify_backend
+      - chatservice_fastapi
+      - frontend
+    networks:
+      - editly_net
+
+networks:
+  editly_net:
+    driver: bridge

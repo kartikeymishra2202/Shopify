@@ -1,4 +1,5 @@
 import os
+import ssl
 import dj_database_url
 from pathlib import Path
 from datetime import timedelta
@@ -171,9 +172,13 @@ AUTH0_CLIENT_SECRET = os.getenv("AUTH0_CLIENT_SECRET", "").strip()
 AUTH0_REDIRECT_URI = os.getenv("AUTH0_REDIRECT_URI", "").strip()
 AUTH0_AUDIENCE = os.getenv("AUTH0_AUDIENCE", "").strip()
 
-CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", CELERY_BROKER_URL)
 CELERY_TASK_DEFAULT_QUEUE = "django-default"
+if CELERY_BROKER_URL.startswith("rediss://"):
+    CELERY_BROKER_USE_SSL = {"ssl_cert_reqs": ssl.CERT_REQUIRED}
+if CELERY_RESULT_BACKEND.startswith("rediss://"):
+    CELERY_REDIS_BACKEND_USE_SSL = {"ssl_cert_reqs": ssl.CERT_REQUIRED}
 
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
 EMAIL_HOST = os.getenv("EMAIL_HOST", "localhost").strip()
@@ -181,7 +186,6 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@example.com").stri
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", "25"))
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "").strip()
-# Google app password is often copied with spaces; normalize once.
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "").replace(" ", "").strip()
 EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", default=False)
 EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", default=False)

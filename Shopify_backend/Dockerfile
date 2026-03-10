@@ -14,3 +14,6 @@ COPY . .
 
 # Django runs on 8000
 EXPOSE 8000
+
+# Production WSGI server (override in compose if needed)
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]

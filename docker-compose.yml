@@ -1,11 +1,5 @@
 services:
-  # 1. Redis Broker: Used only by Django Celery worker
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-
-  # 2. Django Service (Shopify Backend)
+  # 1. Django Service (Shopify Backend)
   shopify:
     build: ./Shopify_backend
     command: python manage.py runserver 0.0.0.0:8000
@@ -15,10 +9,8 @@ services:
     # We keep ports open for debugging, but Nginx will handle traffic on port 80
     ports:
       - "8000:8000"
-    depends_on:
-      - redis
 
-  # 3. FastAPI Service (Chat Logic)
+  # 2. FastAPI Service (Chat Logic)
   fastapi:
     build: ./ChatService_FastApi
     command: uvicorn main:app --host 0.0.0.0 --port 8001
@@ -28,7 +20,7 @@ services:
     ports:
       - "8001:8001"
 
-  # 4. Django Celery Worker (password reset emails)
+  # 3. Django Celery Worker (password reset emails)
   worker:
     build: ./Shopify_backend
     command: celery -A config worker --loglevel=info
@@ -36,10 +28,9 @@ services:
       - ./Shopify_backend:/app
     env_file: .env
     depends_on:
-      - redis
       - shopify
 
-  # 5. Nginx Gateway: The single entry point for the frontend
+  # 4. Nginx Gateway: The single entry point for the frontend
   nginx:
     image: nginx:alpine
     ports:
@@ -51,7 +42,10 @@ services:
       - fastapi
 
   frontend:
-    build: ./Shopify
+    build:
+      context: ./Shopify
+      target: build
+    command: npm run dev -- --host 0.0.0.0 --port 5173
     ports:
       - "5173:5173"
     volumes:
