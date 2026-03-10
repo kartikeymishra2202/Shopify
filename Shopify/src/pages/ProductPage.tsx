@@ -70,8 +70,6 @@ export default function ProductPage() {
     setSearchParams(newParams);
   };
 
-  const clearAllFilters = () => setSearchParams({});
-
   if (error) return <Error message={error} />;
 
   return (

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode, type JwtPayload } from "jwt-decode";
 
 const api = axios.create({
   baseURL: "http://localhost/api/",
@@ -12,9 +12,9 @@ export const getCurrentUserId = () => {
   const token = localStorage.getItem("access");
   if (!token) return null;
   try {
-    const {user_id} = jwtDecode(token);
-   
-    return user_id; 
+    type DecodedAccessToken = JwtPayload & { user_id?: string; sub?: string };
+    const decoded = jwtDecode<DecodedAccessToken>(token);
+    return decoded.user_id ?? decoded.sub ?? null;
   } catch (error) {
     return null;
   }

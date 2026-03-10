@@ -35,8 +35,14 @@ export default function ProductDetails() {
     async function fetchDetail(){
       try {
         setIsLoading(true);
+        setError(null);
+        if (!slug) {
+          setProduct(null);
+          setError("Missing product slug.");
+          return;
+        }
         const response = await fetchProductBySlug(slug);
-        if(response=='data does not exist'){
+        if(response === "data does not exist"){
           setProduct(null);
           return ;
         }
