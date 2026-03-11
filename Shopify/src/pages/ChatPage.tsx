@@ -20,7 +20,12 @@ const ChatPage = () => {
   const token = localStorage.getItem('access');
   if (!token) return;
 
-  const ws = new WebSocket(`ws://localhost/ws/chat?token=${token}&target_id=${targetId}`);
+  const rawChatWsUrl = (import.meta.env.VITE_CHAT_WS_URL as string | undefined) ?? "ws://localhost/ws/chat";
+  const wsUrl = new URL(rawChatWsUrl);
+  wsUrl.searchParams.set("token", token);
+  wsUrl.searchParams.set("target_id", targetId ?? "");
+
+  const ws = new WebSocket(wsUrl.toString());
   socketRef.current = ws;
 
   ws.onopen = () => {

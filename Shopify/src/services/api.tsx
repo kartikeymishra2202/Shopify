@@ -1,8 +1,11 @@
 import axios from "axios";
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 
+const rawApiBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "http://localhost:8000/api/";
+const API_BASE_URL = rawApiBaseUrl.endsWith("/") ? rawApiBaseUrl : `${rawApiBaseUrl}/`;
+
 const api = axios.create({
-  baseURL: "http://localhost/api/",
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -38,7 +41,8 @@ api.interceptors.response.use((response)=>response,async(error)=>{
    
      originalRequest._retry = true;
     try {
-      const res = await axios.post("http://localhost:8000/api/user/token/refresh/", {
+      const refreshUrl = new URL("user/token/refresh/", API_BASE_URL).toString();
+      const res = await axios.post(refreshUrl, {
         refresh: refreshToken,
       });
       const accessToken = res.data.access;
