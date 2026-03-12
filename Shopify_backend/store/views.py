@@ -2,6 +2,7 @@ import requests
 from rest_framework.generics import ListAPIView,RetrieveAPIView
 from django_filters import rest_framework as filters
 from rest_framework.views import APIView
+from django.db import transaction, connection
 from .models import Product,Cart,CartItem,Order,OrderItem,Category
 from .serializers import ProductSerializer,CartSerializer,OrderSerializer,CategorySerializer, ProductCreateSerializer
 from django.shortcuts import get_object_or_404
@@ -362,27 +363,56 @@ class CheckoutView(APIView):
     def post(self, request):
         user = request.user
         data = request.data 
-        cart = Cart.objects.get(user=user)
-        cart_items = cart.items.all()
+        try:
+            cart = Cart.objects.get(user=user)
+        except Cart.DoesNotExist:
+            return Response({"error": "Cart is empty"}, status=400)
 
+        cart_items = cart.items.select_related("product")
         if not cart_items.exists():
             return Response({"error": "Cart is empty"}, status=400)
 
-        order = Order.objects.create(
-            user=user,
-            full_name=data.get('full_name'),
-            email=data.get('email'),
-            address=data.get('address'),
-            total_amount=data.get('total_amount')
-        )
-        for item in cart_items:
-            OrderItem.objects.create(
-                order=order,
-                product=item.product,
-                price=item.product.price, 
-                quantity=item.quantity
-            )
-        cart_items.delete()
+        try:
+            with transaction.atomic():
+                product_ids = list(cart_items.values_list("product_id", flat=True))
+                product_queryset = Product.objects.filter(id__in=product_ids)
+                if connection.vendor != "sqlite":
+                    product_queryset = product_queryset.select_for_update()
+                products_by_id = {product.id: product for product in product_queryset}
+
+                for item in cart_items:
+                    product = products_by_id.get(item.product_id)
+                    if not product or not product.is_active:
+                        raise ValueError(f"Product not available (id={item.product_id}).")
+                    if product.stock < item.quantity:
+                        raise ValueError(
+                            f"Insufficient stock for '{product.title}'. "
+                            f"Available={product.stock}, requested={item.quantity}."
+                        )
+
+                order = Order.objects.create(
+                    user=user,
+                    full_name=data.get("full_name"),
+                    email=data.get("email"),
+                    address=data.get("address"),
+                    total_amount=data.get("total_amount"),
+                )
+
+                for item in cart_items:
+                    product = products_by_id[item.product_id]
+                    product.stock -= item.quantity
+                    product.save(update_fields=["stock"])
+                    OrderItem.objects.create(
+                        order=order,
+                        product=product,
+                        price=product.price,
+                        quantity=item.quantity,
+                    )
+
+                cart_items.delete()
+        except ValueError as exc:
+            return Response({"error": str(exc)}, status=400)
+
         return Response({"msg": "Order placed successfully", "order_id": order.id})
     
 class MyOrdersView(ListAPIView):

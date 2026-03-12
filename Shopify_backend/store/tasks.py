@@ -10,14 +10,7 @@ from django.utils.http import urlsafe_base64_encode
 from store.models import User
 
 
-@shared_task(
-    bind=True,
-    name="store.send_password_reset_email",
-    autoretry_for=(smtplib.SMTPException, OSError),
-    retry_backoff=True,
-    retry_jitter=True,
-    retry_kwargs={"max_retries": 3},
-)
+
 def send_password_reset_email(self, email: str) -> str:
     user = User.objects.filter(email__iexact=email).first()
     if not user:

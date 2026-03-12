@@ -37,7 +37,7 @@ export default function ProductCart({ product }: { product: Product }) {
           </div>
         </div>
         <h3 className="font-bold text-slate-800 line-clamp-1">{product.title}</h3>
-        <p className="text-[#5048e5] font-bold">${product.price}</p>
+        <p className="text-[#5048e5] font-bold">₹{product.price}</p>
       </div>
 
       <div className="mt-4 flex flex-col gap-2">
@@ -52,7 +52,7 @@ export default function ProductCart({ product }: { product: Product }) {
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className="flex-1 py-2 bg-[#5048e5] text-blue-800 text-xs font-bold rounded-lg shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 disabled:bg-slate-300 disabled:shadow-none transition-all"
+            className="flex-1 py-2 bg-[#5048e5] text-shadow-blue-50 text-xs font-bold rounded-lg shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 disabled:bg-slate-300 disabled:shadow-none transition-all"
           >
             Add to Cart
           </button>
