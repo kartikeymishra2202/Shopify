@@ -29,7 +29,7 @@ from rest_framework import filters as drf_filters
 from django_filters import rest_framework as django_filters
 from .models import ChatMessage, User
 from django.conf import settings
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .tasks import send_password_reset_email
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_str
@@ -317,7 +317,8 @@ class ProductDetailView(RetrieveAPIView):
 
 class AdminProductCreateView(APIView):
     permission_classes = [IsAdminUser]
-    parser_classes = [MultiPartParser, FormParser]
+    # Accept JSON payloads for link-based images (and keep form/multipart for compatibility).
+    parser_classes = [JSONParser, FormParser, MultiPartParser]
 
     def post(self, request, format=None):
         serializer = ProductCreateSerializer(data=request.data)

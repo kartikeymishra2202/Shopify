@@ -110,7 +110,9 @@ class Product(models.Model):
     slug = models.SlugField(unique=True, blank=True)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    image = models.ImageField(upload_to='products/')
+    # Store product image as an external link (no local file persistence).
+    # Kept as `image` for backward compatibility with existing API payloads.
+    image = models.URLField(max_length=1000, blank=True, null=True)
     stock = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

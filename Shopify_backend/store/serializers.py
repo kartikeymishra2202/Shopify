@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Product, Category,Cart, CartItem,Order,OrderItem
+from django.conf import settings
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,10 +26,27 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
 
     def get_image(self, obj):
+        value = obj.image
+        if not value:
+            return None
+
+        # If it's already an external link, return as-is.
+        if isinstance(value, str) and (value.startswith("http://") or value.startswith("https://")):
+            return value
+
+        # Handle relative paths by building absolute URI.
+        # relative media paths (e.g. "products/foo.jpg").
         request = self.context.get('request')
-        if obj.image:
-            return request.build_absolute_uri(obj.image.url)
-        return None
+        if not request:
+            return value
+
+        if isinstance(value, str) and value.startswith("/"):
+            return request.build_absolute_uri(value)
+
+        media_url = getattr(settings, "MEDIA_URL", "/media/")
+        if not media_url.endswith("/"):
+            media_url += "/"
+        return request.build_absolute_uri(f"{media_url}{value}")
 
 
 class ProductCreateSerializer(serializers.ModelSerializer):
@@ -77,7 +95,7 @@ class CartSerializer(serializers.ModelSerializer):
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.ReadOnlyField(source='product.title')
-    product_image = serializers.ReadOnlyField(source='product.image.url') 
+    product_image = serializers.ReadOnlyField(source='product.image')
 
     class Meta:
         model = OrderItem
