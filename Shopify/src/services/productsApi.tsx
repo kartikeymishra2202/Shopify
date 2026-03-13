@@ -14,12 +14,18 @@ export const fetchProductBySlug = async (slug: string) => {
   return res.data;
 };
 
-export const createAdminProduct = async (payload: FormData) => {
-  const res = await api.post("admin/products/", payload, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+type AdminCreateProductPayload = {
+  title: string;
+  description: string;
+  price: string;
+  stock: string;
+  category_id: number;
+  is_active: boolean;
+  image: string;
+};
+
+export const createAdminProduct = async (payload: AdminCreateProductPayload) => {
+  const res = await api.post("admin/products/", payload);
   return res.data;
 };
 

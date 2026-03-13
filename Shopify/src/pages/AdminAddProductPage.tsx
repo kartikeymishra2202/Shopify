@@ -15,7 +15,7 @@ export default function AdminAddProductPage() {
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [image, setImage] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export default function AdminAddProductPage() {
     setDescription("");
     setPrice("");
     setStock("");
-    setImage(null);
+    setImageUrl("");
     setIsActive(true);
   };
 
@@ -46,8 +46,14 @@ export default function AdminAddProductPage() {
     setError(null);
     setSuccess(null);
 
-    if (!image) {
-      setError("Product image is required.");
+    const trimmedImageUrl = imageUrl.trim();
+    if (!trimmedImageUrl) {
+      setError("Image link is required.");
+      return;
+    }
+
+    if (!/^https?:\/\//i.test(trimmedImageUrl)) {
+      setError("Please enter a valid image URL (must start with http:// or https://).");
       return;
     }
 
@@ -58,16 +64,15 @@ export default function AdminAddProductPage() {
 
     try {
       setLoading(true);
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("description", description);
-      formData.append("price", price);
-      formData.append("stock", stock);
-      formData.append("category_id", categoryId);
-      formData.append("is_active", String(isActive));
-      formData.append("image", image);
-
-      await createAdminProduct(formData);
+      await createAdminProduct({
+        title,
+        description,
+        price,
+        stock,
+        category_id: Number(categoryId),
+        is_active: isActive,
+        image: trimmedImageUrl,
+      });
       setSuccess("Product created successfully.");
       resetForm();
     } catch {
@@ -158,9 +163,10 @@ export default function AdminAddProductPage() {
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Image</label>
             <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+              type="url"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="https://..."
               className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none"
               required
             />
