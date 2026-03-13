@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import ProductListView,ProductDetailView,UserRegistrationView,UserLoginView,UserProfileView,UserChangePasswordView,PasswordResetRequestView,PasswordResetConfirmView,CartSyncView,CheckoutView,MyOrdersView,CategoryListView,ActiveChatsView,Auth0BackendCallbackView,AdminProductCreateView
+from .views import ProductListView,ProductDetailView,UserRegistrationView,UserLoginView,UserProfileView,UserChangePasswordView,PasswordResetRequestView,PasswordResetConfirmView,CartSyncView,CheckoutView,MyOrdersView,CategoryListView,ActiveChatsView,Auth0BackendCallbackView,AdminProductCreateView,HealthView
 from rest_framework_simplejwt.views import TokenRefreshView
 urlpatterns = [
+    path('health/', HealthView.as_view(), name='health'),
     path('products/', ProductListView.as_view(), name='product-list'),
     path('products/<slug:slug>/', ProductDetailView.as_view(), name='product-detail'),
     path('admin/products/', AdminProductCreateView.as_view(), name='admin-product-create'),
